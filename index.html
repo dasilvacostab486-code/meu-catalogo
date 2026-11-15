@@ -1,199 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KiraFlix Admin</title>
-  <script src="https://tailwindcss.com"></script>
-  <style>
-    body { background-color: #0b0b12; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
-    .card-dark { background-color: #13131d; border: 1px solid #222232; }
-    .input-dark { background-color: #0b0b12; border: 1px solid #27273a; color: #fff; }
-    .input-dark:focus { border-color: #f97316; outline: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Catálogo Pro</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); margin: 0; padding: 16px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        h1 { font-size: 1.4rem; margin: 0; display: flex; align-items: center; gap: 8px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); border-color: var(--primary); }
+        .section { display: none; background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .section.active { display: block; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 1rem; }
+        .row { display: flex; gap: 10px; }
+        .btn { padding: 12px 18px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); color: white; width: 100%; }
+        .btn-danger { background: var(--danger); color: white; padding: 6px 10px; font-size: 0.8rem; }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 15px; }
+        .tmdb-item { cursor: pointer; border-radius: 8px; overflow: hidden; border: 2px solid transparent; background: var(--bg); text-align: center; }
+        .tmdb-item.selected { border-color: var(--success); }
+        .tmdb-item img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .tmdb-item p { font-size: 0.75rem; padding: 6px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .selected-box { display: none; background: var(--bg); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--success); }
+        .selected-header { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+        .selected-header img { width: 60px; height: 90px; border-radius: 6px; object-fit: cover; }
+        .saved-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+        .saved-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+        .saved-info img { width: 40px; height: 60px; border-radius: 4px; object-fit: cover; }
+        .status { padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; display: none; }
+        .status.ok { display: block; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: #6ee7b7; }
+        .status.err { display: block; background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: #fca5a5; }
+    </style>
 </head>
-<body class="pb-24 min-h-screen">
+<body>
 
-  <!-- Cabeçalho Superior -->
-  <header class="card-dark sticky top-0 z-20 px-4 py-3 flex items-center justify-between border-b border-slate-800/80">
-    <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center font-bold text-white shadow-lg shadow-orange-500/20">
-        K
-      </div>
-      <span class="font-bold text-base tracking-tight">KiraFlix <span class="text-slate-400 font-normal">Admin</span></span>
+<div class="container">
+    <header>
+        <h1>🎬 Painel Catálogo Rápido</h1>
+        <span id="badgeCount" style="background: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">0 itens</span>
+    </header>
+
+    <div id="statusBox" class="status"></div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('add')">➕ Adicionar</button>
+        <button class="tab-btn" onclick="openTab('list')">📚 Catálogo</button>
+        <button class="tab-btn" onclick="openTab('config')">⚙️ Configurar</button>
     </div>
-    <div class="flex items-center gap-2">
-      <span id="status-badge" class="text-[11px] bg-orange-500/10 text-orange-400 border border-orange-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-        <span id="header-count">0 títulos</span>
-      </span>
-      <button onclick="atualizarTudo()" class="w-8 h-8 rounded-full card-dark flex items-center justify-center text-slate-400 hover:text-white">
-        ↻
-      </button>
+
+    <!-- ABA ADICIONAR -->
+    <div id="tab-add" class="section active">
+        <div class="form-group">
+            <label>Buscar Filme ou Série no TMDB</label>
+            <div class="row">
+                <select id="searchType" style="width: 110px;">
+                    <option value="movie">Filme</option>
+                    <option value="tv">Série</option>
+                </select>
+                <input type="text" id="searchQuery" placeholder="Nome ou ID (Ex: Matrix)..." onkeypress="if(event.key==='Enter') searchTMDB()">
+                <button class="btn btn-primary" onclick="searchTMDB()">Buscar</button>
+            </div>
+        </div>
+
+        <div id="tmdbResults" class="results-grid"></div>
+
+        <div id="selectedBox" class="selected-box">
+            <div class="selected-header">
+                <img id="selPoster" src="" alt="Capa">
+                <div>
+                    <h3 id="selTitle" style="margin: 0 0 4px 0; font-size: 1.1rem;"></h3>
+                    <small id="selMeta" style="color: var(--muted);"></small>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Link do Vídeo / Player (MP4, M3U8, Embed)</label>
+                <input type="url" id="videoUrl" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>Categoria (Opcional)</label>
+                <input type="text" id="videoCategory" placeholder="Ex: Lançamentos, Ação, Dublado...">
+            </div>
+            <button class="btn btn-success" onclick="saveItem()">💾 Salvar Direto no GitHub</button>
+        </div>
     </div>
-  </header>
 
-  <main class="max-w-4xl mx-auto px-4 pt-4 space-y-5">
-
-    <!-- ABA: BIBLIOTECA (PADRÃO) -->
-    <section id="aba-biblioteca" class="space-y-4">
-      
-      <!-- Cards de Estatísticas -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div class="card-dark p-3.5 rounded-xl">
-          <div id="stat-filmes" class="text-2xl font-bold text-white">0</div>
-          <div class="text-[11px] text-slate-400 font-medium mt-1 flex items-center gap-1">🎬 FILMES</div>
+    <!-- ABA CATÁLOGO -->
+    <div id="tab-list" class="section">
+        <div class="row" style="margin-bottom: 15px;">
+            <input type="text" id="filterInput" placeholder="Filtrar itens salvos..." onkeyup="renderList()">
+            <button class="btn btn-primary" onclick="loadFromGitHub()">🔄</button>
         </div>
-        <div class="card-dark p-3.5 rounded-xl">
-          <div id="stat-series" class="text-2xl font-bold text-white">0</div>
-          <div class="text-[11px] text-slate-400 font-medium mt-1 flex items-center gap-1">📺 SÉRIES</div>
-        </div>
-        <div class="card-dark p-3.5 rounded-xl">
-          <div id="stat-episodios" class="text-2xl font-bold text-white">0</div>
-          <div class="text-[11px] text-slate-400 font-medium mt-1 flex items-center gap-1">🎞️ EPISÓDIOS</div>
-        </div>
-        <div class="card-dark p-3.5 rounded-xl">
-          <div id="stat-fontes" class="text-2xl font-bold text-emerald-400">0</div>
-          <div class="text-[11px] text-emerald-400/80 font-medium mt-1 flex items-center gap-1">✓ COM FONTE</div>
-        </div>
-      </div>
-
-      <!-- Painel de Filtros -->
-      <div class="card-dark p-4 rounded-2xl space-y-3">
-        <div class="text-xs font-bold text-orange-500 tracking-wider uppercase flex items-center gap-1.5">
-          <span>📚</span> TUDO QUE VOCÊ JÁ ADICIONOU
-        </div>
-
-        <div>
-          <label class="block text-[10px] text-slate-400 font-semibold uppercase mb-1">Buscar (Nome ou ID)</label>
-          <input type="text" id="filtro-busca" oninput="renderizarBiblioteca()" placeholder="ex: Dexter ou 969681" class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-        </div>
-
-        <div class="grid grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold uppercase mb-1">Tipo</label>
-            <select id="filtro-tipo" onchange="renderizarBiblioteca()" class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-              <option value="todos">Todos</option>
-              <option value="movie">Filmes</option>
-              <option value="tv">Séries</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold uppercase mb-1">Fonte</label>
-            <select id="filtro-fonte" onchange="renderizarBiblioteca()" class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-              <option value="todos">Todos</option>
-              <option value="com">Com Fonte</option>
-              <option value="sem">Sem Fonte</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2.5 items-end">
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold uppercase mb-1">Ordenar</label>
-            <select id="filtro-ordem" onchange="renderizarBiblioteca()" class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-              <option value="recentes">Mais recentes (ID)</option>
-              <option value="az">A - Z</option>
-              <option value="nota">Maior Nota</option>
-            </select>
-          </div>
-          <button onclick="limparFiltros()" class="input-dark hover:border-orange-500 rounded-lg py-2 text-sm text-slate-300 flex items-center justify-center">
-            ↻ Limpar
-          </button>
-        </div>
-      </div>
-
-      <!-- Contador e Grade de Títulos -->
-      <div class="flex justify-between items-center text-xs text-slate-400 px-1">
-        <span id="texto-contagem">0 de 0 títulos</span>
-      </div>
-
-      <div id="grid-biblioteca" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-    </section>
-
-    <!-- ABA: ADICIONAR -->
-    <section id="aba-adicionar" class="hidden space-y-4">
-      <div class="card-dark p-4 rounded-2xl space-y-3">
-        <h2 class="text-sm font-bold text-orange-500 uppercase">Adicionar Novo Título (TMDB)</h2>
-        <div class="flex gap-2">
-          <select id="tmdb-tipo" class="input-dark rounded-lg px-3 py-2 text-sm">
-            <option value="movie">Filme</option>
-            <option value="tv">Série</option>
-          </select>
-          <input type="text" id="tmdb-query" placeholder="Nome do filme, série ou ID..." class="flex-1 input-dark rounded-lg px-3 py-2 text-sm">
-        </div>
-        <button onclick="buscarTMDB()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold py-2.5 rounded-lg text-sm shadow-lg shadow-orange-500/20">
-          Buscar no TMDB
-        </button>
-      </div>
-      <div id="grid-tmdb" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-    </section>
-
-    <!-- ABA: AUTO -->
-    <section id="aba-auto" class="hidden space-y-4">
-      <div class="card-dark p-4 rounded-2xl space-y-3">
-        <h2 class="text-sm font-bold text-orange-500 uppercase">Importação em Lote / JSON</h2>
-        <p class="text-xs text-slate-400">Exporte seu catálogo completo em JSON para usar como API no seu aplicativo principal ou importe um backup.</p>
-        <button onclick="exportarJSON()" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-2.5 rounded-lg text-sm">
-          ⬇️ Baixar catálogo.json (API)
-        </button>
-      </div>
-    </section>
-
-    <!-- ABA: SAÚDE -->
-    <section id="aba-saude" class="hidden space-y-4">
-      <div class="card-dark p-4 rounded-2xl space-y-3">
-        <h2 class="text-sm font-bold text-orange-500 uppercase">Saúde do Catálogo</h2>
-        <div id="relatorio-saude" class="space-y-2 text-sm text-slate-300"></div>
-      </div>
-    </section>
-
-    <!-- ABA: GITHUB / CONFIG -->
-    <section id="aba-github" class="hidden space-y-4">
-      <div class="card-dark p-4 rounded-2xl space-y-4">
-        <h2 class="text-sm font-bold text-orange-500 uppercase">Configurações & Integração</h2>
-        
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">API Key do TMDB (v3)</label>
-          <input type="text" id="cfg-tmdb" placeholder="Cole sua API Key aqui..." class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-        </div>
-
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Repositório GitHub</label>
-          <input type="text" id="cfg-repo" placeholder="dasilvacostab486/meu-catalogo" class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-        </div>
-
-        <button onclick="salvarConfigs()" class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold py-2.5 rounded-lg text-sm">
-          Salvar Configurações
-        </button>
-
-        <div class="pt-3 border-t border-slate-800">
-          <label class="block text-xs text-slate-400 mb-1">URL Base deste Painel</label>
-          <input type="text" id="cfg-url" readonly class="w-full input-dark rounded-lg px-3 py-2 text-xs text-slate-400">
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Modal para Editar Fonte / Link -->
-  <div id="modal-fonte" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-    <div class="card-dark w-full max-w-md rounded-2xl p-5 space-y-4 border border-orange-500/30">
-      <h3 id="modal-titulo" class="font-bold text-base text-white">Gerenciar Fonte</h3>
-      <input type="hidden" id="modal-id">
-      <div>
-        <label class="block text-xs text-slate-400 mb-1">Link do Player / Embed / MP4</label>
-        <input type="text" id="modal-link" placeholder="https://..." class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div id="modal-ep-box" class="hidden">
-        <label class="block text-xs text-slate-400 mb-1">Quantidade de Episódios</label>
-        <input type="number" id="modal-episodios" value="1" class="w-full input-dark rounded-lg px-3 py-2 text-sm">
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="fecharModal()" class="flex-1 bg-slate-800 py-2 rounded-lg text-sm">Cancelar</button>
-        <button onclick="salvarFonte()" class="flex-1 bg-orange-600 text-white font-semibold py-2 rounded-lg text-sm">Salvar Fonte</button>
-      </div>
+        <div id="savedList"></div>
     </div>
-  </div>
 
-  <!-- Barra de Navegação Inferior -->
+    <!-- ABA CONFIGURAR -->
+    <div id="tab-config" class="section">
+        <div class="form-group">
+            <label>API Key do TMDB (v3)</label>
+            <input type="password" id="cfgTmdb" placeholder="Cole sua chave do TMDB">
+        </div>
+        <div class="form-group">
+            <label>Token do GitHub (Classic com permissão 'repo')</label>
+            <input type="password" id="cfgToken" placeholder="ghp_...">
+        </div>
+        <div class="row">
+            <div class="form-group" style="flex:1;">
+                <label>Usuário do GitHub</label>
+                <input type="text" id="cfgUser" placeholder="seu-usuario">
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label>Repositório</label>
+                <input type="text" id="cfgRepo" placeholder="meu-catalogo">
+            </div>
+        </div>
+        <button class="btn btn-success" onclick="saveConfig()">Salvar Configurações</button>
+
+        <div class="form-group" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border);">
+            <label>Link da sua API JSON (Use no seu Aplicativo)</label>
+            <div class="row">
+                <input type="text" id="apiUrlOutput" readonly>
+                <button class="btn btn-primary" onclick="copyApi()">Copiar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let catalog = [];
+    let fileSha = "";
+    let currentSelected = null;
+
+    function showStatus(msg, isError = false) {
+        const box = document.getElementById('statusBox');
+        box.textContent = msg;
+        box.className = 'status ' + (isError ? 'err' : 'ok');
+        setTimeout(() => box.style.display = 'none', 4000);
+    }
+
+    function openTab(name) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function getCfg() {
+        return {
+            tmdb: localStorage.getItem('cfg_tmdb') || '',
+            token: localStorage.getItem('cfg_token') || '',
+            user: localStorage.getItem('cfg_user') || '',
+            repo: localStorage.getItem('cfg_repo') || ''
+        };
+    }
+
+    function loadConfig() {
+        const c = getCfg();
+        document.getElementById('cfgTmdb').value = c.tmdb;
+        document.getElementById('cfgToken').value = c.token;
+        document.getElementById('cfgUser').value = c.user;
+        document.getElementById('cfgRepo').value = c.repo;
+        if (c.user && c.repo) {
+            document.getElementById('apiUrlOutput').value = `https://${c.user}.github.io/${c.repo}/catalogo.json`;
+            loadFromGitHub();
+        }
+    }
+
+    function saveConfig() {
+        localStorage.setItem('cfg_tmdb', document.getElementById('cfgTmdb').value.trim());
+        localStorage.setItem('cfg_token', document.getElementById('cfgToken').value.trim());
+        localStorage.setItem('cfg_user', document.getElementById('cfgUser').value.trim());
+        localStorage.setItem('cfg_repo', document.getElementById('cfgRepo').value.trim());
+        loadConfig();
+        showStatus("Configurações salvas com sucesso!");
+    }
+
+    function copyApi() {
+  
