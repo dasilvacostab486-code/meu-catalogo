@@ -1,4 +1,98 @@
-);
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Catálogo</title>
+  <script src="https://tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+  <!-- Cabeçalho e Navegação -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-10">
+    <div class="max-w-3xl mx-auto px-4 py-4">
+      <h1 class="text-xl font-bold text-emerald-400 mb-3">🎬 Meu Catálogo</h1>
+      <nav class="flex gap-6 border-b border-slate-800 pb-2 text-sm font-medium">
+        <button id="btn-adicionar" onclick="mudarAba('adicionar')" class="text-emerald-400 transition">Adicionar</button>
+        <button id="btn-biblioteca" onclick="mudarAba('biblioteca')" class="text-slate-400 transition">Biblioteca</button>
+        <button id="btn-config" onclick="mudarAba('config')" class="text-slate-400 transition">Config</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-6">
+
+    <!-- ABA 1: ADICIONAR -->
+    <section id="aba-adicionar" class="space-y-4">
+      <div class="flex flex-col sm:flex-row gap-2">
+        <select id="tipo-tmdb" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+          <option value="movie">Filme</option>
+          <option value="tv">Série</option>
+        </select>
+        <input type="text" id="busca-tmdb" placeholder="Digite o nome do filme ou série..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+        <button onclick="buscarTMDB()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-lg text-sm transition">
+          Buscar
+        </button>
+      </div>
+
+      <div id="resultados-tmdb" class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2"></div>
+    </section>
+
+    <!-- ABA 2: BIBLIOTECA -->
+    <section id="aba-biblioteca" class="hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-semibold">Itens Salvos</h2>
+        <span id="contador-itens" class="text-xs text-slate-400">0 itens</span>
+      </div>
+      <div id="lista-biblioteca" class="grid grid-cols-2 sm:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- ABA 3: CONFIGURAÇÕES -->
+    <section id="aba-config" class="hidden space-y-4">
+      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-4">
+        <h2 class="text-lg font-semibold text-emerald-400">Configurações</h2>
+        
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">API Key do TMDB</label>
+          <input type="text" id="input-tmdb-key" placeholder="Cole sua chave da API TMDB aqui" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Repositório GitHub (ex: usuario/meu-catalogo)</label>
+          <input type="text" id="input-gh-repo" placeholder="dasilvacostab486/meu-catalogo" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+        </div>
+
+        <button onclick="salvarConfig()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-lg text-sm transition">
+          Salvar Configurações
+        </button>
+
+        <div class="pt-4 border-t border-slate-800">
+          <label class="block text-xs text-slate-400 mb-1">Link do seu Aplicativo / API</label>
+          <div class="flex gap-2">
+            <input type="text" id="link-api-app" readonly class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-400">
+            <button onclick="copiarLinkAPI()" class="bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg text-xs font-medium transition">
+              Copiar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function carregarConfig() {
+      const key = localStorage.getItem('tmdb_key') || '';
+      const repo = localStorage.getItem('gh_repo') || 'dasilvacostab486/meu-catalogo';
+      document.getElementById('input-tmdb-key').value = key;
+      document.getElementById('input-gh-repo').value = repo;
+      document.getElementById('link-api-app').value = window.location.href;
+    }
+
+    function salvarConfig() {
+      const key = document.getElementById('input-tmdb-key').value.trim();
+      const repo = document.getElementById('input-gh-repo').value.trim();
+      localStorage.setItem('tmdb_key', key);
       localStorage.setItem('gh_repo', repo);
       carregarConfig();
       alert('Configurações salvas com sucesso!');
@@ -14,11 +108,11 @@
     function mudarAba(aba) {
       ['adicionar', 'biblioteca', 'config'].forEach(id => {
         document.getElementById('aba-' + id).classList.add('hidden');
-        document.getElementById('btn-' + id).classList.remove('text-emerald-400', 'font-semibold');
+        document.getElementById('btn-' + id).classList.remove('text-emerald-400');
         document.getElementById('btn-' + id).classList.add('text-slate-400');
       });
       document.getElementById('aba-' + aba).classList.remove('hidden');
-      document.getElementById('btn-' + aba).classList.add('text-emerald-400', 'font-semibold');
+      document.getElementById('btn-' + aba).classList.add('text-emerald-400');
       document.getElementById('btn-' + aba).classList.remove('text-slate-400');
 
       if (aba === 'biblioteca') carregarBiblioteca();
@@ -27,7 +121,7 @@
     async function buscarTMDB() {
       const key = localStorage.getItem('tmdb_key');
       if (!key) {
-        alert('Cole sua API Key do TMDB na aba Configurar primeiro!');
+        alert('Cole sua API Key do TMDB na aba Config primeiro!');
         mudarAba('config');
         return;
       }
@@ -36,10 +130,78 @@
       const tipo = document.getElementById('tipo-tmdb').value;
       if (!query) return;
 
-      setStatus('Buscando...', 'text-amber-400');
-      const isId = /^\d+$/.test(query);
-      const isBearer = key.length > 40;
+      const container = document.getElementById('resultados-tmdb');
+      container.innerHTML = '<p class="text-sm text-slate-400 col-span-full">Buscando...</p>';
 
-      let url = isId
-        ? `https://themoviedb.org{tipo}/${query}?language=pt-BR`
-     
+      try {
+        const res = await fetch(`https://themoviedb.org{tipo}?api_key=${key}&language=pt-BR&query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        if (!data.results || data.results.length === 0) {
+          container.innerHTML = '<p class="text-sm text-slate-400 col-span-full">Nenhum resultado encontrado.</p>';
+          return;
+        }
+
+        container.innerHTML = data.results.map(item => {
+          const titulo = item.title || item.name;
+          const ano = (item.release_date || item.first_air_date || '').split('-')[0];
+          const poster = item.poster_path ? `https://tmdb.org{item.poster_path}` : 'https://placeholder.com';
+          
+          return `
+            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+              <img src="${poster}" alt="${titulo}" class="w-full h-56 object-cover">
+              <div class="p-3 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 class="font-semibold text-sm line-clamp-2">${titulo}</h3>
+                  <p class="text-xs text-slate-400 mt-1">${ano || 'N/A'} • ${tipo === 'movie' ? 'Filme' : 'Série'}</p>
+                </div>
+                <button onclick='salvarItem(${JSON.stringify({id: item.id, titulo, ano, poster, tipo}).replace(/'/g, "&apos;")})' class="mt-3 w-full bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/40 py-1.5 rounded-lg text-xs font-medium transition">
+                  + Salvar na Biblioteca
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (erro) {
+        container.innerHTML = '<p class="text-sm text-red-400 col-span-full">Erro ao buscar. Verifique sua API Key.</p>';
+      }
+    }
+
+    function salvarItem(item) {
+      const biblioteca = JSON.parse(localStorage.getItem('minha_biblioteca') || '[]');
+      if (biblioteca.some(i => i.id === item.id)) {
+        alert('Este item já está na sua biblioteca!');
+        return;
+      }
+      biblioteca.push(item);
+      localStorage.setItem('minha_biblioteca', JSON.stringify(biblioteca));
+      alert(`"${item.titulo}" foi salvo na sua biblioteca!`);
+    }
+
+    function removerItem(id) {
+      let biblioteca = JSON.parse(localStorage.getItem('minha_biblioteca') || '[]');
+      biblioteca = biblioteca.filter(i => i.id !== id);
+      localStorage.setItem('minha_biblioteca', JSON.stringify(biblioteca));
+      carregarBiblioteca();
+    }
+
+    function carregarBiblioteca() {
+      const biblioteca = JSON.parse(localStorage.getItem('minha_biblioteca') || '[]');
+      const container = document.getElementById('lista-biblioteca');
+      document.getElementById('contador-itens').innerText = `${biblioteca.length} itens`;
+
+      if (biblioteca.length === 0) {
+        container.innerHTML = '<p class="text-sm text-slate-400 col-span-full">Sua biblioteca ainda está vazia.</p>';
+        return;
+      }
+
+      container.innerHTML = biblioteca.map(item => `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+          <img src="${item.poster}" alt="${item.titulo}" class="w-full h-56 object-cover">
+          <div class="p-3 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="font-semibold text-sm line-clamp-2">${item.titulo}</h3>
+              <p class="text-xs text-slate-400 mt-1">${item.ano || 'N/A'} • ${item.tipo === 'movie' ? 'Filme' : 'Série'}</p>
+            </div>
+            <button onclick="removerItem(${item.id})" class="mt-3 w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-600/40 py-1.5 rounded-lg text-xs font-medium transition">
+              Remover
